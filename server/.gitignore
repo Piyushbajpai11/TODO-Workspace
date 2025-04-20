@@ -1,0 +1,12 @@
+
+# Node artifact files
+node_modules/
+dist/
+
+# env development/production local
+.env
+.env.development.local
+.env.local
+.env.development
+.env.production.local
+.env.production
