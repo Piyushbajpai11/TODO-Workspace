@@ -24,7 +24,7 @@ mongoose
   .catch((error) => console.log(error));
 
 const todoRoutes = require("./routers/todo.router");
-app.use("/list", todoRoutes);
+app.use("/", todoRoutes);
 
 const PORT = process.env.PORT || 5000;
 
