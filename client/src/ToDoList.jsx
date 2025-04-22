@@ -20,7 +20,7 @@ const ToDoList = () => {
   // fetch data using axios with async/await try/catch block
   const fetchData = async () => {
     try {
-      const response = await axios.get(`${API_BACKEND}/`);
+      const response = await axios.get(`${API_BACKEND}/get`);
 
       setTodoList(response.data);
     } catch (error) {

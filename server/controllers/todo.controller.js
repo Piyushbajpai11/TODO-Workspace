@@ -1,6 +1,12 @@
 // user controller
 const Todo = require("../models/todo.model");
 
+const initialData = (req, res) => {
+  res.json({
+    test: "✅ Welcome to MERN-Todofy! - See Live Web URL for this Server - https://mern-todofy.netlify.app",
+  });
+};
+
 const creatList = (req, res) => {
   Todo.create(req.body)
     .then((list) => res.json(list))
@@ -26,4 +32,4 @@ const updateList = (req, res) => {
     .catch((err) => res.status(400).json("Error! " + err));
 };
 
-module.exports = { creatList, getList, deleteList, updateList };
+module.exports = { initialData, creatList, getList, deleteList, updateList };
