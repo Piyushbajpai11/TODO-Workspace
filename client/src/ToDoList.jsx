@@ -13,7 +13,8 @@ const ToDoList = () => {
 
   const [addTask, setAddTask] = useState(initialValue);
   const [todoList, setTodoList] = useState([]);
-  const [reload, setReload] = useState(false);
+  const [isListLoading, setIsListLoading] = useState(true);
+  const [isButtonLoading, setButtonLoading] = useState(false);
 
   const API_BACKEND = import.meta.env.VITE_API_BASE_URL;
 
@@ -25,12 +26,14 @@ const ToDoList = () => {
       setTodoList(response.data);
     } catch (error) {
       console.error(`${error.status} ${error.code}`);
+    } finally {
+      setIsListLoading(false);
     }
   };
 
   useEffect(() => {
     fetchData();
-  }, [reload]);
+  }, []);
 
   // Update input value
   const handleChange = (event) => {
@@ -53,20 +56,23 @@ const ToDoList = () => {
         },
       };
 
+      setButtonLoading(true);
       async function updateData() {
         try {
-          const response = await axios.put(
+          await axios.put(
             `${API_BACKEND}/update/${addTask._id}`,
             updateTask,
             headers
           );
 
+          await fetchData();
           toast.success("Task updated");
           setAddTask(initialValue);
-          setReload(!reload);
         } catch (error) {
           console.error(`${error.status} ${error.code}`);
           toast.error(`${error.status} ${error.code}`);
+        } finally {
+          setButtonLoading(false);
         }
       }
       updateData();
@@ -83,29 +89,39 @@ const ToDoList = () => {
         },
       };
 
+      setButtonLoading(true);
       async function postData() {
         try {
-          const response = await axios.post(
-            `${API_BACKEND}/new`,
-            newTask,
-            headers
-          );
+          await axios.post(`${API_BACKEND}/new`, newTask, headers);
 
+          await fetchData();
           toast.success("Task created");
           setAddTask(initialValue);
-          setReload(!reload);
         } catch (error) {
           console.error(`${error.status} ${error.code}`);
           toast.error(`${error.status} ${error.code}`);
+        } finally {
+          setButtonLoading(false);
         }
       }
       postData();
     }
   };
 
+  // buttonText function to show button text during and after api call
+  const buttonText = () => {
+    if (isButtonLoading) {
+      return "Processing...";
+    } else if (addTask._id) {
+      return "UPDATE +";
+    } else {
+      return "ADD +";
+    }
+  };
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
-      <div className="w-[32rem] mt-4 mb-4 min-h-[24rem] flex flex-col justify-start items-start px-8 py-6 space-y-6 rounded-xl overflow-hidden border border-gray-300 shadow-lg bg-white">
+      <div className="w-[32rem] m-4 min-h-[24rem] flex flex-col justify-start items-start px-8 py-6 space-y-6 rounded-xl overflow-hidden border border-gray-300 shadow-lg bg-white">
         <div className="flex gap-3 justify-center items-center text-3xl font-semibold text-gray-800">
           <RiCalendarTodoLine />
           <h1>To-Do List</h1>
@@ -120,28 +136,37 @@ const ToDoList = () => {
             required
             className="block w-full p-3 ps-4 pe-24 text-sm text-gray-900 border border-gray-300 rounded-md bg-gray-100 focus:ring-purple-500 focus:border-purple-500"
             value={addTask.todoValue}
-            onChange={handleChange}
+            onChange={(e) => {
+              if (!isButtonLoading) {
+                handleChange(e);
+              }
+            }}
             placeholder="Add your task..."
             autoComplete="off"
           />
 
           <button
             type="submit"
-            className="absolute right-2.5 bottom-[0.30rem] text-white font-semibold rounded-md text-sm px-4 py-2 bg-purple-600 hover:bg-purple-700 transition duration-200"
+            disabled={isButtonLoading}
+            className={`absolute right-2.5 bottom-[0.30rem] text-white font-semibold rounded-md text-sm px-4 py-2 
+      ${
+        isButtonLoading
+          ? "bg-gray-400 cursor-not-allowed"
+          : "bg-purple-600 hover:bg-purple-700 transition duration-200"
+      }`}
           >
-            {addTask._id ? "UPDATE +" : "ADD +"}
+            {buttonText()}
           </button>
         </form>
 
         {/* Render tasks using ListItem component */}
-        {todoList.length > 0 && (
-          <ListItem
-            todoList={todoList}
-            setTodoList={setTodoList}
-            setAddTask={setAddTask}
-            setReload={setReload}
-          />
-        )}
+        <ListItem
+          todoList={todoList}
+          setTodoList={setTodoList}
+          setAddTask={setAddTask}
+          isListLoading={isListLoading}
+          fetchData={fetchData}
+        />
       </div>
     </div>
   );
