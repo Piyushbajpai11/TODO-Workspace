@@ -2,6 +2,8 @@
 
 A simple yet powerful full-stack todo application built with the MERN stack. Organize your tasks efficiently with a clean and responsive user interface.
 
+- [🚀 _Live Project Demo_ 😍](https://mern-todofy.netlify.app/)
+
 ## 🚀 About the Project
 
 This is a full-stack Todo application that allows users to create, read, update, and delete (CRUD) tasks. It's built with the MERN stack (MongoDB, Express.js, React.js, Node.js) to provide a seamless and fast user experience.
