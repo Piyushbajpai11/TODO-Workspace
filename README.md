@@ -31,23 +31,23 @@ The repository is organized into two main folders to separate the frontend and b
 ```bash
 /MERN-Todo
 
-├── client/          # Frontend React application
+├── client/              # Frontend React application
 │   ├── public/
 │   ├── src/
 │   │   └── App.jsx
 │   ├── index.html
 │   └── package.json
-└── server/          # Backend Node.js and Express.js application
-    ├── controllers/ # Logic for handling requests
-    ├── models/ # Mongoose schemas
-    ├── routers/ # API routes
-    ├── index.js # Entry point of the server
+└── server/              # Backend Node.js and Express.js application
+    ├── controllers/     # Logic for handling requests
+    ├── models/          # Mongoose schemas
+    ├── routers/         # API routes
+    ├── index.js         # Entry point of the server
     └── package.json
 ```
 
 ## 🎻 Prerequisites
 
-Before getting started with the Practicing Projects, you should have a basic understanding of MongoDB, Express.js, React.js, Node.js, HTML, CSS, TailwindCSS and JavaScript.
+Before getting started with the Practicing Projects, you should have a basic understanding of `MongoDB, Express.js, React.js, Node.js, HTML, CSS, TailwindCSS and JavaScript.`
 
 ## 🔥 Clone this Repository
 
