@@ -7,7 +7,7 @@ import Tooltip from "./Tooltip";
 import ListItemSkeleton from "./ListItemSkeleton";
 import { useState } from "react";
 
-const ListItem = ({ todoList, setAddTask, isListLoading, fetchData }) => {
+const ListItem = ({ todoList, setAddTask, isListLoading, fetchTodoList }) => {
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [isCompleteLoading, setIsCompleteLoading] = useState(false);
 
@@ -26,26 +26,31 @@ const ListItem = ({ todoList, setAddTask, isListLoading, fetchData }) => {
       },
     };
 
-    async function deleteData() {
+    async function deleteTodoList() {
       setIsDeleteLoading(true);
       try {
-        await axios.delete(`${API_BACKEND}/delete/${_id}`, headers);
+        const res = await axios.delete(`${API_BACKEND}/delete/${_id}`, headers);
 
-        await fetchData();
-        toast.success("Task deleted");
-      } catch (error) {
-        console.error(`${error.status} ${error.code}`);
-        toast.error(`${error.status} ${error.code}`);
+        toast.success(res?.data?.message);
+        await fetchTodoList();
+      } catch (err) {
+        const message =
+          err.response?.data?.errorMessage || "Something went wrong!";
+        console.error("Error:", message);
+        toast.error(message);
       } finally {
         setIsDeleteLoading(false);
       }
     }
-    deleteData();
+    deleteTodoList();
   };
 
   // Toggle completion for a task using its unique id
-  const handleComplete = (task) => {
-    const updatedTask = { ...task, isCompleted: !task.isCompleted };
+  const handleComplete = (currentTask) => {
+    const updatedTask = {
+      ...currentTask,
+      isCompleted: !currentTask.isCompleted,
+    };
 
     const headers = {
       headers: {
@@ -53,29 +58,31 @@ const ListItem = ({ todoList, setAddTask, isListLoading, fetchData }) => {
       },
     };
 
-    async function updateData() {
+    async function updateTodoList() {
       setIsCompleteLoading(true);
       try {
         await axios.put(
-          `${API_BACKEND}/update/${task._id}`,
+          `${API_BACKEND}/update/${currentTask._id}`,
           updatedTask,
           headers
         );
 
-        await fetchData();
         toast.success(
-          task.isCompleted
-            ? `${task.todoValue} - Task not completed`
-            : `${task.todoValue} - Task completed`
+          currentTask.isCompleted
+            ? `${currentTask.task} - Task not completed`
+            : `${currentTask.task} - Task completed`
         );
-      } catch (error) {
-        console.error(`${error.status} ${error.code}`);
-        toast.error(`${error.status} ${error.code}`);
+        await fetchTodoList();
+      } catch (err) {
+        const message =
+          err.response?.data?.errorMessage || "Something went wrong!";
+        console.error("Error:", message);
+        toast.error(message);
       } finally {
         setIsCompleteLoading(false);
       }
     }
-    updateData();
+    updateTodoList();
   };
 
   return (
@@ -83,19 +90,19 @@ const ListItem = ({ todoList, setAddTask, isListLoading, fetchData }) => {
       {isListLoading ? (
         <ListItemSkeleton />
       ) : (
-        todoList.map((task) => (
+        todoList.map((list) => (
           <div
-            key={task._id}
+            key={list._id}
             className="flex flex-row justify-between items-start gap-x-3"
           >
             <div
               className={`flex flex-row justify-start items-start gap-x-4 ${
                 isCompleteLoading ? "cursor-not-allowed" : "cursor-pointer"
               }`}
-              onClick={() => !isCompleteLoading && handleComplete(task)}
+              onClick={() => !isCompleteLoading && handleComplete(list)}
             >
               <span className="h-5 w-5">
-                {task.isCompleted ? (
+                {list.isCompleted ? (
                   <FaCheckCircle color="#16a34a" size={22} />
                 ) : (
                   <FaRegCircle color="#484d5c" size={22} />
@@ -104,10 +111,10 @@ const ListItem = ({ todoList, setAddTask, isListLoading, fetchData }) => {
 
               <span
                 className={`break-all ${
-                  task.isCompleted ? "line-through" : "no-underline"
+                  list.isCompleted ? "line-through" : "no-underline"
                 }`}
               >
-                {task.todoValue}
+                {list.task}
               </span>
             </div>
 
@@ -115,7 +122,7 @@ const ListItem = ({ todoList, setAddTask, isListLoading, fetchData }) => {
               <Tooltip text="Edit">
                 <div
                   className="h-5 w-5 cursor-pointer text-green-700 hover:text-green-900"
-                  onClick={() => handleEdit(task)}
+                  onClick={() => handleEdit(list)}
                 >
                   <TbEdit size={20} />
                 </div>
@@ -128,7 +135,7 @@ const ListItem = ({ todoList, setAddTask, isListLoading, fetchData }) => {
                       : "text-gray-700 cursor-pointer hover:text-rose-800"
                   }`}
                   onClick={() => {
-                    if (!isDeleteLoading) handleDelete(task._id);
+                    if (!isDeleteLoading) handleDelete(list._id);
                   }}
                 >
                   <RiDeleteBin6Line size={20} />
