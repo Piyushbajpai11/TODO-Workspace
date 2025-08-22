@@ -33,18 +33,24 @@ The repository is organized into two main folders to separate the frontend and b
 ```bash
 /MERN-Todo
 
-├── client/              # Frontend React application
+├── client/                      # Frontend React application
 │   ├── public/
-│   ├── src/
+│   ├── src/                     # Source code
 │   │   └── App.jsx
-│   ├── index.html
-│   └── package.json
-└── server/              # Backend Node.js and Express.js application
-    ├── controllers/     # Logic for handling requests
-    ├── models/          # Mongoose schemas
-    ├── routers/         # API routes
-    ├── index.js         # Entry point of the server
-    └── package.json
+│   ├── .env                     # Environment variables
+│   ├── index.css                # Global styles
+│   ├── index.html               # HTML entry point
+│   └── index.jsx                # React entry point
+│
+└── server/                      # Backend Node.js and Express.js application
+│   ├── controllers/             # Request handling logic
+│   ├── models/                  # Mongoose schemas
+│   ├── node_modules/
+│   ├── routes/                  # API route definitions
+│   ├── .env                     # Environment variables
+│   └── index.js                 # Server entry point
+│
+└── README.md                    # Project documentation
 ```
 
 ## 🎻 Prerequisites
