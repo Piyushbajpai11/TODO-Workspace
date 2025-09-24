@@ -11,6 +11,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
+                cleanWs()
                 git branch: 'main', url: 'https://github.com/Piyushbajpai11/TODO-Workspace.git'
             }
         }
