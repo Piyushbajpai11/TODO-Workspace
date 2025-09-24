@@ -8,14 +8,6 @@ pipeline {
     }
 
     stages {
-
-        stage('Checkout') {
-            steps {
-                cleanWs()
-                git branch: 'main', url: 'https://github.com/Piyushbajpai11/TODO-Workspace.git'
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
                 sh 'cd server && npm install'
@@ -53,11 +45,9 @@ pipeline {
                 sh 'kubectl apply -f k8s/'
                 sh 'kubectl rollout status deployment/mern-backend'
                 sh 'kubectl rollout status deployment/mern-frontend'
-
             }
         }
-
-    } // stages
+    }
 
     post {
         success {
