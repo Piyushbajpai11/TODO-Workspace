@@ -2,55 +2,37 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE_BACKEND = "piyushbajpai685/mern-backend"
-        DOCKER_IMAGE_FRONTEND = "piyushbajpai685/mern-frontend"
+        DOCKER_IMAGE_BACKEND = "your-dockerhub-username/mern-backend"
+        DOCKER_IMAGE_FRONTEND = "your-dockerhub-username/mern-frontend"
         DOCKER_TAG = "v1.0"
     }
 
     stages {
-        stage('Checkout Code') {
+
+        stage('Checkout') {
             steps {
-                // Clean workspace and checkout code
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: 'main']],
-                    extensions: [
-                        [$class: 'CleanCheckout'],
-                        [$class: 'RelativeTargetDirectory', relativeTargetDir: '.']
-                    ],
-                    userRemoteConfigs: [[url: 'https://github.com/Piyushbajpai11/TODO-Workspace.git']]
-                ])
-                
-                // Verify the checkout worked
-                sh 'ls -la'
-                sh 'echo "Current directory structure:" && find . -maxdepth 2 -type d | sort'
+                git branch: 'main', url: 'https://github.com/chetannada/MERN-Todo.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'cd server && npm install'
-                sh 'cd client && npm install'
+                sh 'cd backend && npm install'
+                sh 'cd frontend && npm install'
             }
         }
 
-        stage('Environment Setup') {
+        stage('Run Shell Scripts') {
             steps {
-                sh 'chmod +x scripts/*.sh'
                 sh './scripts/setup.sh'
-            }
-        }
-
-        stage('Health Check') {
-            steps {
                 sh './scripts/healthcheck.sh'
             }
         }
 
         stage('Build Docker Images') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE_BACKEND:$DOCKER_TAG ./server'
-                sh 'docker build -t $DOCKER_IMAGE_FRONTEND:$DOCKER_TAG ./client'
+                sh 'docker build -t $DOCKER_IMAGE_BACKEND:$DOCKER_TAG ./backend'
+                sh 'docker build -t $DOCKER_IMAGE_FRONTEND:$DOCKER_TAG ./frontend'
             }
         }
 
@@ -67,11 +49,10 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh 'kubectl apply -f k8s/'
-                sh 'kubectl rollout status deployment/mern-backend'
-                sh 'kubectl rollout status deployment/mern-frontend'
             }
         }
-    }
+
+    } // stages
 
     post {
         success {

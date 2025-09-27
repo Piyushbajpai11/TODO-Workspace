@@ -1,49 +1,79 @@
 #!/usr/bin/env bash
-# setup.sh — Smart setup script that detects environment
+# setup.sh — idempotent environment setup for development
+# Usage: sudo ./setup.sh
 set -euo pipefail
 
-detect_environment() {
-    if [ -n "${JENKINS_URL:-}" ] || [ -n "${JENKINS_HOME:-}" ]; then
-        echo "jenkins"
-    elif [ -f /.dockerenv ] || grep -q docker /proc/self/cgroup 2>/dev/null; then
-        echo "docker"
+# ---- Configurable vars ----
+NODE_VERSION="18"
+MONGO_CONTAINER_NAME="todo-mongo"
+MONGO_IMAGE="mongo:6.0"
+
+# ---- Helpers ----
+log() {
+    printf "\n[setup] %s\n" "$*"
+}
+
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+detect_distro() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        echo "$ID"  # ubuntu, debian, centos, fedora, etc.
     else
-        echo "local"
+        echo "unknown"
     fi
 }
 
-ENV=$(detect_environment)
-printf "\n[setup] Detected environment: %s\n" "$ENV"
+# ---- Start ----
+log "Detecting Linux distro..."
+DISTRO=$(detect_distro)
+log "Distro detected: $DISTRO"
 
-case "$ENV" in
-    "jenkins")
-        echo "[setup] Running Jenkins-specific setup..."
-        if [ -f "$(dirname "$0")/setup-jenkins.sh" ]; then
-            "$(dirname "$0")/setup-jenkins.sh"
-        else
-            echo "[setup] Jenkins setup script not found, running minimal setup..."
-            # Minimal setup that works in Jenkins
-            mkdir -p ./logs
-            command -v node && command -v npm && command -v docker
-        fi
-        ;;
-    "docker")
-        echo "[setup] Running in Docker container - minimal setup..."
-        mkdir -p ./logs
-        ;;
-    "local")
-        echo "[setup] Running local development setup..."
-        if [ -f "$(dirname "$0")/setup-local.sh" ]; then
-            "$(dirname "$0")/setup-local.sh"
-        else
-            echo "[setup] Local setup script not found"
-            exit 1
-        fi
-        ;;
-    *)
-        echo "[setup] Unknown environment, running minimal setup..."
-        mkdir -p ./logs
-        ;;
-esac
+# Install Node.js (only if not present)
+if command_exists node && command_exists npm; then
+    log "Node & npm already installed: $(node -v) $(npm -v)"
+else
+    log "Installing Node.js LTS (v$NODE_VERSION)..."
+    if [ "$DISTRO" = "ubuntu" ] || [ "$DISTRO" = "debian" ]; then
+        curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | sudo -E bash -
+        sudo apt-get update
+        sudo apt-get install -y nodejs build-essential
+    elif [ "$DISTRO" = "centos" ] || [ "$DISTRO" = "rhel" ] || [ "$DISTRO" = "fedora" ]; then
+        curl -fsSL https://rpm.nodesource.com/setup_${NODE_VERSION}.x | sudo bash -
+        sudo yum install -y nodejs gcc-c++
+    else
+        log "Unsupported/unknown distro. Please install Node.js v$NODE_VERSION manually."
+    fi
+fi
 
-echo "[setup] Setup completed successfully for $ENV environment"
+# Check Docker (recommended) — if present we'll use a Mongo container
+if command_exists docker; then
+    log "Docker detected: $(docker --version)"
+    # Ensure the mongo container is running (if not, start it)
+    if docker ps --format '{{.Names}}' | grep -q "^${MONGO_CONTAINER_NAME}$"; then
+        log "Mongo container '${MONGO_CONTAINER_NAME}' already running."
+    else
+        if docker ps -a --format '{{.Names}}' | grep -q "^${MONGO_CONTAINER_NAME}$"; then
+            log "Starting existing Mongo container..."
+            docker start "${MONGO_CONTAINER_NAME}"
+        else
+            log "Creating & starting Mongo container (${MONGO_IMAGE})..."
+            docker run -d --name "${MONGO_CONTAINER_NAME}" -p 27017:27017 -v mongo_data:/data/db "${MONGO_IMAGE}"
+        fi
+    fi
+else
+    log "Docker NOT found. Attempting to install MongoDB system package (if apt available)."
+    if [ "$DISTRO" = "ubuntu" ] || [ "$DISTRO" = "debian" ]; then
+        sudo apt-get update
+        sudo apt-get install -y mongodb || log "mongodb install failed — please install MongoDB manually or install Docker."
+    else
+        log "Automatic Mongo install not supported for this distro in the script. Please install Docker or MongoDB manually."
+    fi
+fi
+
+log "Creating local logs directory at ./logs"
+mkdir -p ./logs
+
+log "Setup complete. Next: npm install in backend/frontend and test the app."
