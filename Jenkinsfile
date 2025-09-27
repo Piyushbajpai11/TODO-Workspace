@@ -10,14 +10,20 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
+                // Clean workspace and checkout code
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: 'main']],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [],
-                    submoduleCfg: [],
+                    extensions: [
+                        [$class: 'CleanCheckout'],
+                        [$class: 'RelativeTargetDirectory', relativeTargetDir: '.']
+                    ],
                     userRemoteConfigs: [[url: 'https://github.com/Piyushbajpai11/TODO-Workspace.git']]
                 ])
+                
+                // Verify the checkout worked
+                sh 'ls -la'
+                sh 'echo "Current directory structure:" && find . -maxdepth 2 -type d | sort'
             }
         }
 
@@ -28,10 +34,15 @@ pipeline {
             }
         }
 
-        stage('Run Shell Scripts') {
+        stage('Environment Setup') {
             steps {
                 sh 'chmod +x scripts/*.sh'
                 sh './scripts/setup.sh'
+            }
+        }
+
+        stage('Health Check') {
+            steps {
                 sh './scripts/healthcheck.sh'
             }
         }
