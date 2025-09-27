@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE_BACKEND = "your-dockerhub-username/mern-backend"
-        DOCKER_IMAGE_FRONTEND = "your-dockerhub-username/mern-frontend"
+        DOCKER_IMAGE_BACKEND = "piyushbajpai685/mern-backend"
+        DOCKER_IMAGE_FRONTEND = "piyushbajpai685/mern-frontend"
         DOCKER_TAG = "v1.0"
     }
 
@@ -11,14 +11,14 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/chetannada/MERN-Todo.git'
+                git branch: 'main', url: 'https://github.com/Piyushbajpai11/TODO-Workspace.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'cd backend && npm install'
-                sh 'cd frontend && npm install'
+                sh 'cd server && npm install'
+                sh 'cd client && npm install'
             }
         }
 
@@ -31,8 +31,8 @@ pipeline {
 
         stage('Build Docker Images') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE_BACKEND:$DOCKER_TAG ./backend'
-                sh 'docker build -t $DOCKER_IMAGE_FRONTEND:$DOCKER_TAG ./frontend'
+                sh 'docker build -t $DOCKER_IMAGE_BACKEND:$DOCKER_TAG ./server'
+                sh 'docker build -t $DOCKER_IMAGE_FRONTEND:$DOCKER_TAG ./client'
             }
         }
 
