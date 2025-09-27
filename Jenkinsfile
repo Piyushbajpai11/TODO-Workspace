@@ -8,10 +8,16 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/Piyushbajpai11/TODO-Workspace.git'
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: 'main']],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[url: 'https://github.com/Piyushbajpai11/TODO-Workspace.git']]
+                ])
             }
         }
 
