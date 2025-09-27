@@ -34,12 +34,12 @@ if command_exists node && command_exists npm; then
 else
   log "Installing Node.js LTS (v$NODE_VERSION)..."
   if [ "$DISTRO" = "ubuntu" ] || [ "$DISTRO" = "debian" ]; then
-    curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | sudo -E bash -
-    sudo apt-get update
-    sudo apt-get install -y nodejs build-essential
+    curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | -E bash -
+    apt-get update
+    apt-get install -y nodejs build-essential
   elif [ "$DISTRO" = "centos" ] || [ "$DISTRO" = "rhel" ] || [ "$DISTRO" = "fedora" ]; then
-    curl -fsSL https://rpm.nodesource.com/setup_${NODE_VERSION}.x | sudo bash -
-    sudo yum install -y nodejs gcc-c++
+    curl -fsSL https://rpm.nodesource.com/setup_${NODE_VERSION}.x |  bash -
+    yum install -y nodejs gcc-c++
   else
     log "Unsupported/unknown distro. Please install Node.js v$NODE_VERSION manually."
   fi
@@ -62,8 +62,8 @@ if command_exists docker; then
 else
   log "Docker NOT found. Attempting to install MongoDB system package..."
   if [ "$DISTRO" = "ubuntu" ] || [ "$DISTRO" = "debian" ]; then
-    sudo apt-get update
-    sudo apt-get install -y mongodb || log "mongodb install failed — please install MongoDB manually or install Docker."
+    apt-get update
+    apt-get install -y mongodb || log "mongodb install failed — please install MongoDB manually or install Docker."
   else
     log "Automatic Mongo install not supported for this distro."
   fi
