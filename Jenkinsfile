@@ -11,6 +11,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
+                deleteDir() // ensure clean workspace
                 git branch: 'main', url: 'https://github.com/Piyushbajpai11/TODO-Workspace.git'
             }
         }
@@ -18,10 +19,10 @@ pipeline {
         stage('Install Node.js') {
             steps {
                 sh '''
-                  curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-                  apt-get install -y nodejs
-                  node -v
-                  npm -v
+                    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+                    apt-get install -y nodejs
+                    node -v
+                    npm -v
                 '''
             }
         }
