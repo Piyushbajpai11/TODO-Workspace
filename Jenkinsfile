@@ -15,6 +15,26 @@ pipeline {
             }
         }
 
+        stage('Install Node.js') {
+            steps {
+                sh '''
+                  curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+                  apt-get install -y nodejs
+                  node -v
+                  npm -v
+                '''
+            }
+        }
+
+        stage('Setup Environment') {
+            steps {
+                sh '''
+                  chmod +x scripts/setup.sh
+                  ./scripts/setup.sh
+                '''
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 sh 'cd server && npm install'
@@ -22,10 +42,26 @@ pipeline {
             }
         }
 
-        stage('Run Shell Scripts') {
+        stage('Run Healthcheck') {
             steps {
-                sh './scripts/setup.sh'
-                sh './scripts/healthcheck.sh'
+                sh '''
+                  chmod +x scripts/healthcheck.sh
+                  ./scripts/healthcheck.sh
+                '''
+            }
+        }
+
+        stage('Install Docker') {
+            steps {
+                sh '''
+                  apt-get update
+                  apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+                  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+                  add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+                  apt-get update
+                  apt-get install -y docker-ce docker-ce-cli containerd.io
+                  docker --version
+                '''
             }
         }
 
